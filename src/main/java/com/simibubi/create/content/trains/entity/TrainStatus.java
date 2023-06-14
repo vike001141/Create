@@ -10,6 +10,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 
 public class TrainStatus {
@@ -119,12 +120,13 @@ public class TrainStatus {
 		if (queued.isEmpty())
 			return;
 		LivingEntity owner = train.getOwner(level);
-		if (owner == null)
-			return;
-		if (owner instanceof Player player) {
-			player.displayClientMessage(Lang.translateDirect("train.status", train.name)
-				.withStyle(ChatFormatting.GOLD), false);
-			queued.forEach(c -> player.displayClientMessage(c, false));
+		if (owner != null)
+		for (Player player : level.players()) {
+			if (player instanceof ServerPlayer serverPlayer) {
+				serverPlayer.sendMessage(Lang.translateDirect("train.status", train.name)
+					.withStyle(ChatFormatting.GOLD), false);
+				queued.forEach(c -> serverPlayer.sendMessage(c, false));
+			}
 		}
 		queued.clear();
 	}
